@@ -4,7 +4,9 @@ use std::{
 };
 
 use itertools::Itertools;
-use ndarray::{Array, IxDyn};
+use ndarray::{
+    Array, ArrayBase, AsArray, Axis, Dimension, IxDyn, NdProducer, OwnedRepr, RemoveAxis, ViewRepr,
+};
 
 type Board = Array<Option<Player>, IxDyn>;
 
@@ -97,6 +99,52 @@ impl Game {
     }
 }
 
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        println!("{:?}", self.board);
+        // for (i, row) in self.board.columns().into_iter().enumerate() {
+        //     for (i, cell) in row.iter().enumerate() {
+        //         match cell {
+        //             Some(p) => write!(f, "{}", p.symbol())?,
+        //             None => write!(f, " ")?,
+        //         }
+        //         if i < row.len() - 1 {
+        //             write!(f, " | ")?;
+        //         }
+        //     }
+        //     if i < self.board.columns().into_iter().len() - 1 {
+        //         writeln!(f, "\n{}", "-".repeat(self.width * 4 - 3))?;
+        //     }
+        // }
+
+        for iter in self.board.outer_iter() {}
+
+        Ok(())
+    }
+}
+
+/// Format the board for the final time.
+///
+/// # Panics
+///
+/// Panics if the dimension is greater than 1.
+fn fmt_board_final<D: Dimension>(board: Array<Option<Player>, D>) -> String {
+    let dim = board.raw_dim().size();
+
+    if dim > 1 {
+        panic!("Dimension must be <= 1");
+    }
+
+    let mut symbols = Vec::new();
+    for cell in board.iter() {
+        match cell {
+            Some(p) => symbols.push(p.symbol()),
+            None => symbols.push(' '),
+        }
+    }
+    return symbols.iter().join(" | ");
+}
+
 pub struct Piece {
     player: Player,
     coords: Vec<usize>,
@@ -116,6 +164,16 @@ pub enum PlacePieceError {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Player(u32);
+
+impl Player {
+    fn symbol(&self) -> char {
+        match self.0 {
+            0 => 'X',
+            1 => 'O',
+            _ => todo!(),
+        }
+    }
+}
 
 impl Display for Player {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -153,43 +211,38 @@ mod test {
         let mut game = Game::new(4, 2);
 
         {
-            let pn = None;
-            let p0 = Some(p0);
-            let p1 = Some(p1);
-
             // Insert pieces
-            #[rustfmt::skip]
-            let board = vec![
-                p0, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, p1,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            // vec![
+            //     p0, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, p1,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
 
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, p1, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, p0, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, p1, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, p0, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
 
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, p1, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, p0, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, p1, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, p0, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
 
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, p1, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, p0, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, p1, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, p0, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
 
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    p1, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
-                pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, p0,
-            ];
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    p1, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,
+            //     pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, pn,    pn, pn, pn, pn, p0,
+            // ];
         }
 
         game.place_piece(Piece::new(p0, vec![0, 0, 0, 0])).unwrap();
@@ -237,6 +290,46 @@ mod test {
         // Check winner
         assert!(game.check_win(p0));
         assert!(game.check_win(p1));
+    }
+
+    #[test]
+    fn test_5d_win() {
+        let p0 = Player(0);
+        let p1 = Player(1);
+        let mut game = Game::new(5, 2);
+
+        // Insert pieces
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 0]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![0, 0, 1, 0, 1]))
+            .unwrap();
+
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 1]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![0, 0, 0, 4, 1]))
+            .unwrap();
+
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 2]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![0, 2, 0, 0, 1]))
+            .unwrap();
+
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 3]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![1, 0, 0, 0, 1]))
+            .unwrap();
+
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 4]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![0, 2, 2, 0, 1]))
+            .unwrap();
+
+        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 5]))
+            .unwrap();
+        game.place_piece(Piece::new(p1, vec![0, 2, 2, 2, 1]))
+            .unwrap();
+
+        assert!(game.check_win(p0));
     }
 
     #[test]

@@ -7,7 +7,7 @@ fn main() {
 
     loop {
         // Print the board
-        println!("{:#?}", game);
+        println!("{}", game);
 
         // Get the next player's move
         let player = game.current_player();
@@ -22,7 +22,9 @@ fn main() {
             Ok(_) => {
                 // Check if the game is over
                 if game.check_win(player) {
-                    println!("Player {} wins!", player);
+                    // Print the board
+                    println!("{}", game);
+                    println!("{} wins!", player);
                     break;
                 }
             }
