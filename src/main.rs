@@ -40,11 +40,15 @@ fn get_player_input() -> std::io::Result<Vec<usize>> {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
 
-    Ok(input
+    let input: Vec<usize> = input
         .trim()
         .split_whitespace()
         .map(|x| x.parse().unwrap())
-        .collect())
+        .collect();
+
+    let [x1, y1, y2, x2] = input[..] else { panic!() };
+
+    Ok(vec![x1, y1, x2, y2])
 }
 
 /// Start an n-dimensional tic-tac-toe game.
