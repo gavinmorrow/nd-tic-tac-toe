@@ -4,9 +4,7 @@ use std::{
 };
 
 use itertools::Itertools;
-use ndarray::{
-    Array, ArrayBase, AsArray, Axis, Dimension, IxDyn, NdProducer, OwnedRepr, RemoveAxis, ViewRepr,
-};
+use ndarray::{Array, Dimension, IxDyn};
 
 type Board = Array<Option<Player>, IxDyn>;
 
@@ -25,7 +23,9 @@ impl Game {
             board: Array::from_elem(vec![width; dim], None),
             dim,
             width,
-            players: (0..players).map(Player).collect(),
+            players: (0..players)
+                .map(|n| n.try_into().expect("Valid number of players"))
+                .collect(),
         }
     }
 
@@ -107,7 +107,7 @@ impl Game {
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        println!("{:?}", self.board);
+        // println!("{:?}", self.board);
 
         if self.dim != 4 {
             todo!();
@@ -149,13 +149,11 @@ impl Display for Game {
             // Combine rows (multiline string)
             let mut rows = vec![String::new(); 9 /* 5 + 4 */];
 
-            println!("{:#?}", row[0].lines().collect::<Vec<_>>().len());
-
             for grid in row {
                 let lines: Vec<&str> = grid.lines().collect();
                 for (i, line) in lines.iter().enumerate() {
                     rows[i].push_str(line);
-                    rows[i].push_str(" || ");
+                    rows[i].push_str("    ");
                 }
             }
 
@@ -165,62 +163,19 @@ impl Display for Game {
         }
 
         // Join each row of grids
-        let out = out.iter().join(&format!(
-            "\n{}\n",
-            "=".repeat(out[0].lines().into_iter().next().unwrap().len())
+        let mut out = out.iter().join(&format!(
+            "\n{}\n\n",
+            " ".repeat(out[0].lines().into_iter().next().unwrap().len())
         ));
+
+        for player in self.players.iter() {
+            out = out.replace(player.symbol(), &player.with_color());
+        }
 
         f.write_str(&out)?;
 
-        // for (i, row) in self.board.columns().into_iter().enumerate() {
-        //     for (i, cell) in row.iter().enumerate() {
-        //         match cell {
-        //             Some(p) => write!(f, "{}", p.symbol())?,
-        //             None => write!(f, " ")?,
-        //         }
-        //         if i < row.len() - 1 {
-        //             write!(f, " | ")?;
-        //         }
-        //     }
-        //     if i < self.board.columns().into_iter().len() - 1 {
-        //         writeln!(f, "\n{}", "-".repeat(self.width * 4 - 3))?;
-        //     }
-        // }
-
-        // let mut rows = Vec::new();
-
-        // for (i, cell) in self.board.iter().enumerate() {
-        //     let coords = self.get_coords(i);
-        //     let mut row = Vec::new();
-
-        // }
-
-        // for iter in self.board.outer_iter() {}
-
         Ok(())
     }
-}
-
-/// Format the board for the final time.
-///
-/// # Panics
-///
-/// Panics if the dimension is greater than 1.
-fn fmt_board_final<D: Dimension>(board: Array<Option<Player>, D>) -> String {
-    let dim = board.raw_dim().size();
-
-    if dim > 1 {
-        panic!("Dimension must be <= 1");
-    }
-
-    let mut symbols = Vec::new();
-    for cell in board.iter() {
-        match cell {
-            Some(p) => symbols.push(p.symbol()),
-            None => symbols.push(' '),
-        }
-    }
-    return symbols.iter().join(" | ");
 }
 
 pub struct Piece {
@@ -241,21 +196,40 @@ pub enum PlacePieceError {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Player(u32);
+pub struct Player(char);
 
 impl Player {
     fn symbol(&self) -> char {
-        match self.0 {
-            0 => 'X',
-            1 => 'O',
-            _ => todo!(),
+        self.0
+    }
+
+    fn with_color(&self) -> String {
+        let color = match self.0 {
+            'X' => "\x1b[1;94m",
+            'O' => "\x1b[1;93m",
+            'F' => "\x1b[1;95m",
+            _ => "\x1b[1m",
+        };
+        format!("{}{}\x1b[0m", color, self.0)
+    }
+}
+
+impl TryFrom<u32> for Player {
+    type Error = ();
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Self('X')),
+            1 => Ok(Self('O')),
+            2 => Ok(Self('F')),
+            _ => Err(()),
         }
     }
 }
 
 impl Display for Player {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(format!("Player {}", self.0).as_str())
+        f.write_str(format!("Player {}", self.symbol()).as_str())
     }
 }
 
@@ -339,8 +313,8 @@ mod test {
 
     #[test]
     fn test_3d_p0_win() {
-        let p0 = Player(0);
-        let p1 = Player(1);
+        let p0 = Player('X');
+        let p1 = Player('O');
         let game = setup_3d_winner(p0, p1);
 
         // Check winner
@@ -350,8 +324,8 @@ mod test {
 
     #[test]
     fn test_3d_p1_win() {
-        let p0 = Player(0);
-        let p1 = Player(1);
+        let p0 = Player('X');
+        let p1 = Player('O');
         let game = setup_3d_winner(p1, p0);
 
         // Check winner
@@ -361,8 +335,8 @@ mod test {
 
     #[test]
     fn test_4d_both_win() {
-        let p0 = Player(0);
-        let p1 = Player(1);
+        let p0 = Player('X');
+        let p1 = Player('O');
         let game = setup_4d_both_win(p0, p1);
 
         // Check winner
@@ -372,8 +346,8 @@ mod test {
 
     #[test]
     fn test_5d_win() {
-        let p0 = Player(0);
-        let p1 = Player(1);
+        let p0 = Player('X');
+        let p1 = Player('O');
         let mut game = Game::new(5, 2);
 
         // Insert pieces
@@ -414,8 +388,8 @@ mod test {
     #[should_panic]
     fn test_5d_occupied() {
         let mut game = Game::new(5, 2);
-        let p0 = Player(0);
-        let p1 = Player(1);
+        let p0 = Player('X');
+        let p1 = Player('O');
 
         // Insert pieces
         game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 0]))

@@ -11,7 +11,7 @@ fn main() {
 
         // Get the next player's move
         let player = game.current_player();
-        println!("Player {}:", player);
+        println!("{}:", player);
         let Ok(coords) = get_player_input() else {
             println!("Invalid input");
             continue;
@@ -40,13 +40,21 @@ fn get_player_input() -> std::io::Result<Vec<usize>> {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
 
-    let input: Vec<usize> = input
-        .trim()
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
+    let input = input.trim().split_whitespace().map(|x| x.parse());
 
-    let [x1, y1, y2, x2] = input[..] else { panic!() };
+    if !input.clone().all(|r| r.is_ok()) {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Invalid input",
+        ));
+    }
+
+    let input: Vec<usize> = input.map(|r| r.unwrap()).collect();
+
+    let [x1, y1, y2, x2] = input[..] else {
+        // println!("{:?}", input);
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid input"));
+    };
 
     Ok(vec![x1, y1, x2, y2])
 }
