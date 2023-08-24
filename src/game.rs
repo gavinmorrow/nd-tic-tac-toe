@@ -106,73 +106,106 @@ impl Game {
 }
 
 impl Display for Game {
+    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    //     // println!("{:?}", self.board);
+
+    //     if self.dim != 4 {
+    //         todo!();
+    //     }
+
+    //     // Get a 5x5 array of the 5x5 grids
+    //     let mut grids: [[String; 5]; 5] = Default::default();
+    //     for (i, grid_row) in self.board.outer_iter().enumerate() {
+    //         for (j, grid) in grid_row.outer_iter().enumerate() {
+    //             let grid_x = j;
+    //             let grid_y = i;
+
+    //             // Format grid
+    //             let mut gstr = String::new();
+    //             let mut rows = Vec::new();
+    //             for row in grid.rows() {
+    //                 let mut out = Vec::new();
+    //                 for cell in row {
+    //                     match cell {
+    //                         Some(p) => out.push(p.symbol()),
+    //                         None => out.push(' '),
+    //                     }
+    //                 }
+    //                 let out = out.iter().join(" | ");
+    //                 rows.push(out);
+    //             }
+    //             let rows = rows
+    //                 .iter()
+    //                 .join(&format!("\n{}\n", "-".repeat(rows[0].len())));
+    //             gstr.push_str(&rows);
+
+    //             grids[grid_x][grid_y] = gstr;
+    //         }
+    //     }
+
+    //     // Join each row of grids
+    //     let mut out = Vec::new();
+    //     for row in grids.iter() {
+    //         // Combine rows (multiline string)
+    //         let mut rows = vec![String::new(); 9 /* 5 + 4 */];
+
+    //         for grid in row {
+    //             let lines: Vec<&str> = grid.lines().collect();
+    //             for (i, line) in lines.iter().enumerate() {
+    //                 rows[i].push_str(line);
+    //                 rows[i].push_str("    ");
+    //             }
+    //         }
+
+    //         let row = rows.iter().join("\n");
+
+    //         out.push(row);
+    //     }
+
+    //     // Join each row of grids
+    //     let mut out = out.iter().join(&format!(
+    //         "\n{}\n\n",
+    //         " ".repeat(out[0].lines().into_iter().next().unwrap().len())
+    //     ));
+
+    //     for player in self.players.iter() {
+    //         out = out.replace(player.symbol(), &player.with_color());
+    //     }
+
+    //     f.write_str(&out)?;
+
+    //     Ok(())
+    // }
+
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // println!("{:?}", self.board);
-
-        if self.dim != 4 {
-            todo!();
-        }
-
-        // Get a 5x5 array of the 5x5 grids
-        let mut grids: [[String; 5]; 5] = Default::default();
-        for (i, grid_row) in self.board.outer_iter().enumerate() {
-            for (j, grid) in grid_row.outer_iter().enumerate() {
-                let grid_x = j;
-                let grid_y = i;
-
-                // Format grid
-                let mut gstr = String::new();
-                let mut rows = Vec::new();
-                for row in grid.rows() {
-                    let mut out = Vec::new();
-                    for cell in row {
+        if self.dim % 2 == 0 {
+            // Grid
+            for row in self.board.outer_iter() {
+                for grid_row in row.outer_iter() {
+                    for cell in grid_row {
                         match cell {
-                            Some(p) => out.push(p.symbol()),
-                            None => out.push(' '),
+                            Some(p) => write!(f, "{}", p.with_color())?,
+                            None => write!(f, ".")?,
                         }
+                        write!(f, " ")?;
                     }
-                    let out = out.iter().join(" | ");
-                    rows.push(out);
+                    writeln!(f, "|")?;
                 }
-                let rows = rows
-                    .iter()
-                    .join(&format!("\n{}\n", "-".repeat(rows[0].len())));
-                gstr.push_str(&rows);
-
-                grids[grid_x][grid_y] = gstr;
+                writeln!(f, "/")?;
+            }
+        } else {
+            // Row
+            for row in self.board.outer_iter() {
+                for cell in row {
+                    match cell {
+                        Some(p) => write!(f, "{}", p.with_color())?,
+                        None => write!(f, ".")?,
+                    }
+                    writeln!(f, "|")?;
+                }
+                writeln!(f, "/")?;
             }
         }
-
-        // Join each row of grids
-        let mut out = Vec::new();
-        for row in grids.iter() {
-            // Combine rows (multiline string)
-            let mut rows = vec![String::new(); 9 /* 5 + 4 */];
-
-            for grid in row {
-                let lines: Vec<&str> = grid.lines().collect();
-                for (i, line) in lines.iter().enumerate() {
-                    rows[i].push_str(line);
-                    rows[i].push_str("    ");
-                }
-            }
-
-            let row = rows.iter().join("\n");
-
-            out.push(row);
-        }
-
-        // Join each row of grids
-        let mut out = out.iter().join(&format!(
-            "\n{}\n\n",
-            " ".repeat(out[0].lines().into_iter().next().unwrap().len())
-        ));
-
-        for player in self.players.iter() {
-            out = out.replace(player.symbol(), &player.with_color());
-        }
-
-        f.write_str(&out)?;
 
         Ok(())
     }

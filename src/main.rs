@@ -51,6 +51,8 @@ fn get_player_input() -> std::io::Result<Vec<usize>> {
 
     let input: Vec<usize> = input.map(|r| r.unwrap()).collect();
 
+    return Ok(input);
+
     let [x1, y1, y2, x2] = input[..] else {
         // println!("{:?}", input);
         return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid input"));
