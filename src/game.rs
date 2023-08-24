@@ -30,9 +30,8 @@ impl Game {
     }
 
     pub fn place_piece(&mut self, piece: Piece) -> Result<(), PlacePieceError> {
-        let Piece { player, coords } = piece;
-
         // Convert coords to something that can be used by indexing
+        let coords = piece.coords.clone();
         let coords = &coords[..];
 
         match self.board.get(coords) {
@@ -42,7 +41,7 @@ impl Game {
             None => return Err(PlacePieceError::OutOfBounds),
         }
 
-        self.board[coords] = Some(player);
+        self.board[coords] = Some(piece);
         Ok(())
     }
 
@@ -57,11 +56,11 @@ impl Game {
             .board
             .iter()
             .enumerate()
-            .filter(|(_, e): &(usize, &Option<Player>)| match e {
-                Some(p) => p == &player,
+            .filter(|(_, e): &(usize, &Option<Piece>)| match e {
+                Some(p) => p.player == player,
                 None => false,
             })
-            .map(|(i, p)| (i, p.expect("Just filtered out all the Nones")))
+            .map(|(i, p)| (i, p.as_ref().expect("Just filtered out all the Nones")))
             .combinations(self.width);
 
         for combination in pieces {
@@ -106,6 +105,10 @@ impl Game {
 }
 
 impl Display for Game {
+    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    //     todo!()
+    // }
+
     // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     //     // println!("{:?}", self.board);
 
@@ -184,12 +187,12 @@ impl Display for Game {
                 for grid_row in row.outer_iter() {
                     for cell in grid_row {
                         match cell {
-                            Some(p) => write!(f, "{}", p.with_color())?,
+                            Some(p) => write!(f, "{}", p.player.with_color())?,
                             None => write!(f, ".")?,
                         }
                         write!(f, " ")?;
                     }
-                    writeln!(f, "|")?;
+                    write!(f, "|")?;
                 }
                 writeln!(f, "/")?;
             }
@@ -198,10 +201,10 @@ impl Display for Game {
             for row in self.board.outer_iter() {
                 for cell in row {
                     match cell {
-                        Some(p) => write!(f, "{}", p.with_color())?,
+                        Some(p) => write!(f, "{}", p.player.with_color())?,
                         None => write!(f, ".")?,
                     }
-                    writeln!(f, "|")?;
+                    write!(f, "|")?;
                 }
                 writeln!(f, "/")?;
             }

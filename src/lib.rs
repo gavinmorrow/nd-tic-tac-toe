@@ -5,8 +5,9 @@ use player::Player;
 mod game;
 mod player;
 
-type Board = Array<Option<Player>, IxDyn>;
+type Board = Array<Option<Piece>, IxDyn>;
 
+#[derive(Debug, Clone)]
 pub struct Piece {
     player: Player,
     coords: Vec<usize>,
