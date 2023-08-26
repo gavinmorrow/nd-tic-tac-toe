@@ -1,11 +1,10 @@
 pub use game::Game;
-use ndarray::{Array, IxDyn};
 use player::Player;
+use board::Board;
 
 mod game;
 mod player;
-
-type Board = Array<Option<Piece>, IxDyn>;
+mod board;
 
 #[derive(Debug, Clone)]
 pub struct Piece {

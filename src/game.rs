@@ -1,16 +1,15 @@
 use std::{
-    collections::{hash_map::RandomState, HashSet},
+    collections::{hash_map::RandomState, HashSet, VecDeque},
     fmt::Display,
 };
 
 use itertools::Itertools;
-use ndarray::Array;
 
 use super::{Board, Piece, PlacePieceError, Player};
 
 #[derive(Debug)]
 pub struct Game {
-    board: Board,
+    board: Board<Option<Piece>>,
     dim: usize,
     width: usize,
     players: Vec<Player>,
@@ -20,7 +19,7 @@ impl Game {
     pub fn new(dim: usize, players: u32) -> Self {
         let width = dim + 1;
         Self {
-            board: Array::from_elem(vec![width; dim], None),
+            board: Board::<Option<Piece>>::new(vec![width; dim], None),
             dim,
             width,
             players: (0..players)
@@ -31,17 +30,16 @@ impl Game {
 
     pub fn place_piece(&mut self, piece: Piece) -> Result<(), PlacePieceError> {
         // Convert coords to something that can be used by indexing
-        let coords = piece.coords.clone();
-        let coords = &coords[..];
+        let coords: VecDeque<usize> = piece.coords.clone().into();
 
-        match self.board.get(coords) {
+        match self.board.get(coords.clone()) {
             // The outer optional is for in bounds, the inner optional is for occupied.
             Some(Some(_)) => return Err(PlacePieceError::Occupied),
             Some(None) => (), // continue
             None => return Err(PlacePieceError::OutOfBounds),
         }
 
-        self.board[coords] = Some(piece);
+        self.board[coords] = Some(piece).into();
         Ok(())
     }
 
@@ -52,11 +50,12 @@ impl Game {
         // 2. All the pieces are different
 
         // Collect all the pieces for the current player
-        let pieces = self
-            .board
+        let board = self.board.flatten();
+
+        let pieces = board
             .iter()
             .enumerate()
-            .filter(|(_, e): &(usize, &Option<Piece>)| match e {
+            .filter(|(_, e)| match e {
                 Some(p) => p.player == player,
                 None => false,
             })
@@ -97,7 +96,7 @@ impl Game {
 
     pub fn current_player(&self) -> Player {
         // Get number of pieces on the board
-        let num_pieces = self.board.iter().filter(|e| e.is_some()).count();
+        let num_pieces = self.board.flatten().iter().filter(|e| e.is_some()).count();
 
         // Get the player whose turn it is
         self.players[num_pieces % self.players.len()]
@@ -180,36 +179,40 @@ impl Display for Game {
     //     Ok(())
     // }
 
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.dim % 2 == 0 {
-            // Grid
-            for row in self.board.outer_iter() {
-                for grid_row in row.outer_iter() {
-                    for cell in grid_row {
-                        match cell {
-                            Some(p) => write!(f, "{}", p.player.with_color())?,
-                            None => write!(f, ".")?,
-                        }
-                        write!(f, " ")?;
-                    }
-                    write!(f, "|")?;
-                }
-                writeln!(f, "/")?;
-            }
-        } else {
-            // Row
-            for row in self.board.outer_iter() {
-                for cell in row {
-                    match cell {
-                        Some(p) => write!(f, "{}", p.player.with_color())?,
-                        None => write!(f, ".")?,
-                    }
-                    write!(f, "|")?;
-                }
-                writeln!(f, "/")?;
-            }
-        }
+    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    //     if self.dim % 2 == 0 {
+    //         // Grid
+    //         for row in self.board.outer_iter() {
+    //             for grid_row in row.outer_iter() {
+    //                 for cell in grid_row {
+    //                     match cell {
+    //                         Some(p) => write!(f, "{}", p.player.with_color())?,
+    //                         None => write!(f, ".")?,
+    //                     }
+    //                     write!(f, " ")?;
+    //                 }
+    //                 write!(f, "|")?;
+    //             }
+    //             writeln!(f, "/")?;
+    //         }
+    //     } else {
+    //         // Row
+    //         for row in self.board.outer_iter() {
+    //             for cell in row {
+    //                 match cell {
+    //                     Some(p) => write!(f, "{}", p.player.with_color())?,
+    //                     None => write!(f, ".")?,
+    //                 }
+    //                 write!(f, "|")?;
+    //             }
+    //             writeln!(f, "/")?;
+    //         }
+    //     }
 
-        Ok(())
+    //     Ok(())
+    // }
+
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }
