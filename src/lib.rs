@@ -1,30 +1,12 @@
-use std::fmt::Display;
+mod board;
+mod game;
+mod piece;
+mod player;
 
 use board::Board;
 pub use game::Game;
+pub use piece::Piece;
 use player::Player;
-
-mod board;
-mod game;
-mod player;
-
-#[derive(Debug, Clone)]
-pub struct Piece {
-    player: Player,
-    coords: Vec<usize>,
-}
-
-impl Piece {
-    pub fn new(player: Player, coords: Vec<usize>) -> Self {
-        Self { player, coords }
-    }
-}
-
-impl Display for Piece {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.player.with_color().as_str())
-    }
-}
 
 #[derive(Debug)]
 pub enum PlacePieceError {
