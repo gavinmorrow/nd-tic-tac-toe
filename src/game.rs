@@ -1,15 +1,17 @@
 use std::{
-    collections::{hash_map::RandomState, HashSet, VecDeque},
-    fmt::{Debug, Display},
+    collections::{hash_map::RandomState, HashSet},
+    fmt::Display,
 };
 
 use itertools::Itertools;
+
+use crate::board;
 
 use super::{Board, Piece, PlacePieceError, Player};
 
 #[derive(Debug)]
 pub struct Game {
-    board: Board<Option<Piece>>,
+    board: Board<Piece>,
     dim: usize,
     width: usize,
     players: Vec<Player>,
@@ -19,7 +21,7 @@ impl Game {
     pub fn new(dim: usize, players: u32) -> Self {
         let width = dim + 1;
         Self {
-            board: Board::<Option<Piece>>::new(vec![width; dim], None),
+            board: Board::<Option<Piece>>::new(vec![width; dim], Piece::empty()),
             dim,
             width,
             players: (0..players)
@@ -28,18 +30,17 @@ impl Game {
         }
     }
 
-    pub fn place_piece(&mut self, piece: Piece) -> Result<(), PlacePieceError> {
-        // Convert coords to something that can be used by indexing
-        let coords: VecDeque<usize> = piece.coords.clone().into();
-
+    pub fn place_piece(&mut self, piece: Piece, coords: board::Idx) -> Result<(), PlacePieceError> {
         match self.board.get(coords.clone()) {
             // The outer optional is for in bounds, the inner optional is for occupied.
-            Some(Some(_)) => return Err(PlacePieceError::Occupied),
-            Some(None) => (), // continue
+            Some(Piece {
+                player: Some(_), ..
+            }) => return Err(PlacePieceError::Occupied),
+            Some(Piece { player: None, .. }) => (), // continue
             None => return Err(PlacePieceError::OutOfBounds),
         }
 
-        self.board[coords] = Some(piece).into();
+        self.board[coords] = piece.into();
         Ok(())
     }
 
@@ -56,10 +57,11 @@ impl Game {
             .iter()
             .enumerate()
             .filter(|(_, e)| match e {
-                Some(p) => p.player == player,
-                None => false,
+                Piece {
+                    player: Some(p), ..
+                } => p == &player,
+                Piece { player: None, .. } => false,
             })
-            .map(|(i, p)| (i, p.as_ref().expect("Just filtered out all the Nones")))
             .combinations(self.width);
 
         for combination in pieces {
@@ -96,7 +98,12 @@ impl Game {
 
     pub fn current_player(&self) -> Player {
         // Get number of pieces on the board
-        let num_pieces = self.board.flatten().iter().filter(|e| e.is_some()).count();
+        let num_pieces = self
+            .board
+            .flatten()
+            .iter()
+            .filter(|e| e.player.is_some())
+            .count();
 
         // Get the player whose turn it is
         self.players[num_pieces % self.players.len()]
@@ -105,7 +112,7 @@ impl Game {
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.board.fmt(f)
+        f.write_str(format!("{}", self.board).as_str())
     }
 
     // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

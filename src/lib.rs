@@ -24,18 +24,30 @@ mod test {
         let p1 = winner;
 
         // Insert pieces
-        game.place_piece(Piece::new(p0, vec![1, 1, 1])).unwrap();
-        game.place_piece(Piece::new(p1, vec![2, 2, 1])).unwrap();
-        game.place_piece(Piece::new(p0, vec![1, 2, 1])).unwrap();
-        game.place_piece(Piece::new(p1, vec![1, 3, 1])).unwrap();
-        game.place_piece(Piece::new(p0, vec![2, 1, 1])).unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 1, 1])).unwrap();
-        game.place_piece(Piece::new(p0, vec![2, 3, 3])).unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 0, 0])).unwrap();
-        game.place_piece(Piece::new(p0, vec![2, 2, 2])).unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 3, 3])).unwrap();
-        game.place_piece(Piece::new(p0, vec![1, 1, 3])).unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 2, 2])).unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 1, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![2, 2, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 2, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![1, 3, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 1, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 1, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 3, 3].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 0, 0].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 2, 2].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 3, 3].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 1, 3].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 2, 2].into())
+            .unwrap();
 
         game
     }
@@ -78,16 +90,26 @@ mod test {
             // ];
         }
 
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0])).unwrap();
-        game.place_piece(Piece::new(p1, vec![4, 0, 2, 0])).unwrap();
-        game.place_piece(Piece::new(p0, vec![1, 1, 1, 1])).unwrap();
-        game.place_piece(Piece::new(p1, vec![3, 0, 2, 1])).unwrap();
-        game.place_piece(Piece::new(p0, vec![2, 2, 2, 2])).unwrap();
-        game.place_piece(Piece::new(p1, vec![2, 0, 2, 2])).unwrap();
-        game.place_piece(Piece::new(p0, vec![3, 3, 3, 3])).unwrap();
-        game.place_piece(Piece::new(p1, vec![1, 0, 2, 3])).unwrap();
-        game.place_piece(Piece::new(p0, vec![4, 4, 4, 4])).unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 0, 2, 4])).unwrap();
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![4, 0, 2, 0].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 1, 1, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![3, 0, 2, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 2, 2, 2].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![2, 0, 2, 2].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![3, 3, 3, 3].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![1, 0, 2, 3].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![4, 4, 4, 4].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 0, 2, 4].into())
+            .unwrap();
 
         game
     }
@@ -132,34 +154,34 @@ mod test {
         let mut game = Game::new(5, 2);
 
         // Insert pieces
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 0]))
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 0].into())
             .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 0, 1, 0, 1]))
-            .unwrap();
-
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 1]))
-            .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 0, 0, 4, 1]))
+        game.place_piece(Piece::new(p1), vec![0, 0, 1, 0, 1].into())
             .unwrap();
 
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 2]))
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 1].into())
             .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 2, 0, 0, 1]))
-            .unwrap();
-
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 3]))
-            .unwrap();
-        game.place_piece(Piece::new(p1, vec![1, 0, 0, 0, 1]))
+        game.place_piece(Piece::new(p1), vec![0, 0, 0, 4, 1].into())
             .unwrap();
 
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 4]))
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 2].into())
             .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 2, 2, 0, 1]))
+        game.place_piece(Piece::new(p1), vec![0, 2, 0, 0, 1].into())
             .unwrap();
 
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 5]))
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 3].into())
             .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 2, 2, 2, 1]))
+        game.place_piece(Piece::new(p1), vec![1, 0, 0, 0, 1].into())
+            .unwrap();
+
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 4].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 2, 2, 0, 1].into())
+            .unwrap();
+
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 5].into())
+            .unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 2, 2, 2, 1].into())
             .unwrap();
 
         assert!(game.check_win(p0));
@@ -173,9 +195,9 @@ mod test {
         let p1 = Player::new('O');
 
         // Insert pieces
-        game.place_piece(Piece::new(p0, vec![0, 0, 0, 0, 0]))
+        game.place_piece(Piece::new(p0), vec![0, 0, 0, 0, 0].into())
             .unwrap();
-        game.place_piece(Piece::new(p1, vec![0, 0, 0, 0, 0]))
+        game.place_piece(Piece::new(p1), vec![0, 0, 0, 0, 0].into())
             .unwrap();
     }
 }

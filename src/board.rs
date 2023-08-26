@@ -6,7 +6,7 @@ use std::{
 
 use itertools::Itertools;
 
-type Idx = VecDeque<usize>;
+pub(crate) type Idx = VecDeque<usize>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Board<T> {
@@ -120,56 +120,89 @@ impl<T> From<T> for Board<T> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum Direction {
     Horizontal,
-    Verticle,
+    Vertical,
 }
 
 impl Direction {
     fn next(&self) -> Self {
         match self {
-            Direction::Horizontal => Direction::Verticle,
-            Direction::Verticle => Direction::Horizontal,
+            Direction::Horizontal => Direction::Vertical,
+            Direction::Vertical => Direction::Horizontal,
         }
     }
 }
 
+/// # Panics
+///
+/// Assumes that the strings are rectangular (all the lines are the same length,
+/// and both strings are the same size in whatever dimension they are being
+/// combined in).
+/// May panic or not work as expected otherwise.
 fn combine_multiline_strings(a: String, b: String, direction: Direction) -> String {
+    if a.is_empty() {
+        return b;
+    }
+    if b.is_empty() {
+        return a;
+    }
+
     match direction {
         Direction::Horizontal => {
             // Optimization for allocating the output string
             let len = a.len() + b.len();
 
-            // Get the first line of each, and so on until they're done
             let a = a.lines();
             let b = b.lines();
 
             let combined = a.zip(b);
-            combined.fold(String::with_capacity(len), |mut acc, e| {
-                writeln!(acc, "{}{}", e.0, e.1).unwrap();
-                acc
-            })
+            // combined.fold(String::with_capacity(len), |mut acc, e| {
+            //     writeln!(acc, "{}-{}", e.0, e.1).unwrap();
+            //     acc
+            // })
+            combined.map(|(a, b)| format!("{a}{b}")).join("\n")
         }
-        Direction::Verticle => todo!(),
+        Direction::Vertical => {
+            // Just append the strings
+            format!("{a}\n{b}")
+        }
     }
 }
 
-impl<T: Display> Board<T> {
+impl<T: Display + std::fmt::Debug> Board<T> {
     fn display(&self, direction: Direction) -> String {
         match self {
-            Board::Nd(boards) => boards
-                .iter()
-                .map(|board| board.display(direction.next()))
-                .fold(String::new(), |acc, board| {
-                    combine_multiline_strings(acc, board, direction)
-                }),
+            Board::Nd(boards) => {
+                let chunks = boards
+                    .iter()
+                    .map(|board| board.display(direction.next()));
+                    
+
+                // dbg!(chunks
+                //     .into_iter()
+                //     .map(|mut chunk| {
+                //         let a = dbg!(chunk.next().unwrap());
+                //         let b = dbg!(chunk.next());
+                //         dbg!(combine_multiline_strings(
+                //             a,
+                //             b.unwrap_or_default(),
+                //             dbg!(direction)
+                //         ))
+                //     })
+                //     .join(""))
+				todo!()
+            }
+            // .fold(String::new(), |acc, board| {
+            //     combine_multiline_strings(acc, board, direction)
+            // }),
             Board::Piece(piece) => piece.to_string(),
         }
     }
 }
 
-impl<T: Display> Display for Board<T> {
+impl<T: Display + std::fmt::Debug> Display for Board<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.display(Direction::Horizontal).as_str())
     }

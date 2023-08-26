@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use clap::Parser;
 use nd_tic_tac_toe::{Game, Piece};
 
@@ -18,7 +20,7 @@ fn main() {
         };
 
         // Check if the player's move is valid
-        match game.place_piece(Piece::new(player, coords)) {
+        match game.place_piece(Piece::new(player), coords) {
             Ok(_) => {
                 // Check if the game is over
                 if game.check_win(player) {
@@ -36,7 +38,7 @@ fn main() {
     }
 }
 
-fn get_player_input() -> std::io::Result<Vec<usize>> {
+fn get_player_input() -> std::io::Result<VecDeque<usize>> {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
 
@@ -49,16 +51,16 @@ fn get_player_input() -> std::io::Result<Vec<usize>> {
         ));
     }
 
-    let input: Vec<usize> = input.map(|r| r.unwrap()).collect();
+    let input: VecDeque<usize> = input.map(|r| r.unwrap()).collect();
 
     return Ok(input);
 
-    let [x1, y1, y2, x2] = input[..] else {
-        // println!("{:?}", input);
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid input"));
-    };
+    // let [x1, y1, y2, x2] = input[..] else {
+    //     // println!("{:?}", input);
+    //     return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid input"));
+    // };
 
-    Ok(vec![x1, y1, x2, y2])
+    // Ok(vec![x1, y1, x2, y2])
 }
 
 /// Start an n-dimensional tic-tac-toe game.
