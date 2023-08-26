@@ -1,7 +1,10 @@
 use std::{
     collections::VecDeque,
+    fmt::{Display, Write},
     ops::{Index, IndexMut},
 };
+
+use itertools::Itertools;
 
 type Idx = VecDeque<usize>;
 
@@ -88,14 +91,10 @@ impl<T> Board<T> {
 
     pub fn flatten(&self) -> Vec<&T> {
         match self {
-            Board::Nd(boards) => {
-                boards
-                    .iter()
-                    .fold(vec![], |mut acc, e| {
-						acc.append(&mut e.flatten());
-						acc
-					})
-            }
+            Board::Nd(boards) => boards.iter().fold(vec![], |mut acc, e| {
+                acc.append(&mut e.flatten());
+                acc
+            }),
             Board::Piece(piece) => vec![piece],
         }
     }
@@ -118,5 +117,60 @@ impl<T> IndexMut<Idx> for Board<T> {
 impl<T> From<T> for Board<T> {
     fn from(piece: T) -> Self {
         Board::Piece(piece)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    Horizontal,
+    Verticle,
+}
+
+impl Direction {
+    fn next(&self) -> Self {
+        match self {
+            Direction::Horizontal => Direction::Verticle,
+            Direction::Verticle => Direction::Horizontal,
+        }
+    }
+}
+
+fn combine_multiline_strings(a: String, b: String, direction: Direction) -> String {
+    match direction {
+        Direction::Horizontal => {
+            // Optimization for allocating the output string
+            let len = a.len() + b.len();
+
+            // Get the first line of each, and so on until they're done
+            let a = a.lines();
+            let b = b.lines();
+
+            let combined = a.zip(b);
+            combined.fold(String::with_capacity(len), |mut acc, e| {
+                writeln!(acc, "{}{}", e.0, e.1).unwrap();
+                acc
+            })
+        }
+        Direction::Verticle => todo!(),
+    }
+}
+
+impl<T: Display> Board<T> {
+    fn display(&self, direction: Direction) -> String {
+        match self {
+            Board::Nd(boards) => boards
+                .iter()
+                .map(|board| board.display(direction.next()))
+                .fold(String::new(), |acc, board| {
+                    combine_multiline_strings(acc, board, direction)
+                }),
+            Board::Piece(piece) => piece.to_string(),
+        }
+    }
+}
+
+impl<T: Display> Display for Board<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.display(Direction::Horizontal).as_str())
     }
 }

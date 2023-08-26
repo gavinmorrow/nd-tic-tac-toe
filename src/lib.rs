@@ -1,10 +1,12 @@
+use std::fmt::Display;
+
+use board::Board;
 pub use game::Game;
 use player::Player;
-use board::Board;
 
+mod board;
 mod game;
 mod player;
-mod board;
 
 #[derive(Debug, Clone)]
 pub struct Piece {
@@ -15,6 +17,12 @@ pub struct Piece {
 impl Piece {
     pub fn new(player: Player, coords: Vec<usize>) -> Self {
         Self { player, coords }
+    }
+}
+
+impl Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.player.with_color().as_str())
     }
 }
 

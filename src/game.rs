@@ -1,6 +1,6 @@
 use std::{
     collections::{hash_map::RandomState, HashSet, VecDeque},
-    fmt::Display,
+    fmt::{Debug, Display},
 };
 
 use itertools::Itertools;
@@ -104,6 +104,10 @@ impl Game {
 }
 
 impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.board.fmt(f)
+    }
+
     // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     //     todo!()
     // }
@@ -211,8 +215,4 @@ impl Display for Game {
 
     //     Ok(())
     // }
-
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
 }
