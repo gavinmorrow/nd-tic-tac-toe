@@ -151,7 +151,6 @@ fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> Stri
 
             let combined_lines = strings.fold(init, |mut vec, lines| {
                 for (i, line) in lines.iter().enumerate() {
-					// eprintln!("vec: {:?}, i: {i}, line: {line}", vec);
                     vec[i].push_str(&format!(" {}", line));
                 }
 
@@ -159,12 +158,6 @@ fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> Stri
             });
 
             format!(" {} ", combined_lines.join(" \n "))
-
-            // combined.fold(String::with_capacity(len), |mut acc, e| {
-            //     writeln!(acc, "{}-{}", e.0, e.1).unwrap();
-            //     acc
-            // })
-            // combined.map(|(a, b)| format!("{a}{b}")).join("\n")
         }
         Direction::Vertical => {
             // Just append the strings
@@ -179,23 +172,7 @@ impl<T: Display + std::fmt::Debug> Board<T> {
             Board::Nd(boards) => {
                 let boards = boards.iter().map(|board| board.display(direction.next()));
 				combine_multiline_strings(boards.collect(), direction)
-
-                // dbg!(chunks
-                //     .into_iter()
-                //     .map(|mut chunk| {
-                //         let a = dbg!(chunk.next().unwrap());
-                //         let b = dbg!(chunk.next());
-                //         dbg!(combine_multiline_strings(
-                //             a,
-                //             b.unwrap_or_default(),
-                //             dbg!(direction)
-                //         ))
-                //     })
-                //     .join(""))
             }
-            // .fold(String::new(), |acc, board| {
-            //     combine_multiline_strings(acc, board, direction)
-            // }),
             Board::Piece(piece) => piece.to_string(),
         }
     }

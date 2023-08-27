@@ -202,7 +202,7 @@ mod test {
     }
 
     #[test]
-    fn test_2d_not_win() {
+    fn test_2d_no_wraparound_win() {
         let mut game = Game::new(2, 2);
         let p0 = Player::new('X');
         let p1 = Player::new('O');
