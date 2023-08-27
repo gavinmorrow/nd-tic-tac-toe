@@ -147,7 +147,7 @@ fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> Stri
                 .iter()
                 .map(|s| s.lines().map(|s| s.to_string()).collect::<Vec<_>>());
 
-			let init = strings.next().unwrap();
+            let init = strings.next().unwrap();
 
             let combined_lines = strings.fold(init, |mut vec, lines| {
                 for (i, line) in lines.iter().enumerate() {
@@ -171,7 +171,7 @@ impl<T: Display + std::fmt::Debug> Board<T> {
         match self {
             Board::Nd(boards) => {
                 let boards = boards.iter().map(|board| board.display(direction.next()));
-				combine_multiline_strings(boards.collect(), direction)
+                combine_multiline_strings(boards.collect(), direction)
             }
             Board::Piece(piece) => piece.to_string(),
         }

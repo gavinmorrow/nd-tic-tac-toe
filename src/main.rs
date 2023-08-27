@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 
 use clap::Parser;
+use itertools::Itertools;
 use nd_tic_tac_toe::{Game, Piece};
 
 fn main() {
@@ -17,6 +18,12 @@ fn main() {
         let Ok(coords) = get_player_input() else {
             println!("Invalid input");
             continue;
+        };
+
+        let coords = if args.dim % 2 != 0 {
+            map_player_input(coords)
+        } else {
+            coords
         };
 
         // Check if the player's move is valid
@@ -54,13 +61,28 @@ fn get_player_input() -> std::io::Result<VecDeque<usize>> {
     let input: VecDeque<usize> = input.map(|r| r.unwrap()).collect();
 
     return Ok(input);
+}
 
-    // let [x1, y1, y2, x2] = input[..] else {
-    //     // println!("{:?}", input);
-    //     return Err(std::io::Error::new(std::io::ErrorKind::Other, "Invalid input"));
-    // };
+fn map_player_input(input: VecDeque<usize>) -> VecDeque<usize> {
+    let chunks = input
+        .into_iter()
+        // Turns `x1 y2 x2` into `x2 y2 x1`
+        .rev()
+        // Then `(x2 y2) (x1)`
+        .chunks(2);
 
-    // Ok(vec![x1, y1, x2, y2])
+    let mut chunks_vec = Vec::new();
+    for chunk in &chunks {
+        chunks_vec.push(chunk);
+    }
+
+    chunks_vec
+        .into_iter()
+        // Then `(x1) (x2 y2)`
+        .rev()
+        // Then `x1 x2 y2`
+        .flatten()
+        .collect()
 }
 
 /// Start an n-dimensional tic-tac-toe game.
