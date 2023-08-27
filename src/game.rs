@@ -11,7 +11,7 @@ use super::{Board, Piece, PlacePieceError, Player};
 
 #[derive(Debug)]
 pub struct Game {
-    board: Board<Piece>,
+    pub board: Board<Piece>,
     dim: usize,
     width: usize,
     players: Vec<Player>,
@@ -138,8 +138,14 @@ impl Game {
     }
 }
 
+impl Game {
+    pub fn display(&self, hide_padding: bool) -> String {
+        self.board.display(board::Direction::Horizontal, hide_padding)
+    }
+}
+
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(format!("{}", self.board).as_str())
+        f.write_str(&format!("{}", self.board))
     }
 }

@@ -10,7 +10,7 @@ fn main() {
 
     loop {
         // Print the board
-        println!("{}", game);
+        println!("{}", game.display(args.hide_padding));
 
         // Get the next player's move
         let player = game.current_player();
@@ -32,7 +32,7 @@ fn main() {
                 // Check if the game is over
                 if game.check_win(player) {
                     // Print the board
-                    println!("{}", game);
+                    println!("{}", game.display(args.hide_padding));
                     println!("{} wins!", player);
                     break;
                 }
@@ -89,9 +89,14 @@ fn map_player_input(input: VecDeque<usize>) -> VecDeque<usize> {
 #[derive(Parser)]
 struct Cli {
     /// The number of dimensions in the game
-    #[arg(short='d',long="dim")]
+    #[arg(short = 'd', long = "dim")]
     dim: usize,
+
     /// The number of players in the game
-    #[arg(short='p',long="players")]
+    #[arg(short = 'p', long = "players")]
     players: u32,
+
+    // Whether or not to pad each piece with spaces
+    #[arg(short = 's', long = "hide-padding")]
+    hide_padding: bool,
 }

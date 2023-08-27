@@ -119,7 +119,7 @@ impl<T> From<T> for Board<T> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-enum Direction {
+pub(crate) enum Direction {
     Horizontal,
     Vertical,
 }
@@ -139,7 +139,7 @@ impl Direction {
 /// and both strings are the same size in whatever dimension they are being
 /// combined in).
 /// May panic or not work as expected otherwise.
-fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> String {
+fn combine_multiline_strings(strings: Vec<String>, direction: Direction, sep: &str) -> String {
     match direction {
         Direction::Horizontal => {
             // Optimization for allocating the output string
@@ -151,7 +151,7 @@ fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> Stri
 
             let combined_lines = strings.fold(init, |mut vec, lines| {
                 for (i, line) in lines.iter().enumerate() {
-                    vec[i].push_str(&format!(" {}", line));
+                    vec[i].push_str(&format!("{sep}{}", line));
                 }
 
                 vec
@@ -167,11 +167,14 @@ fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> Stri
 }
 
 impl<T: Display + std::fmt::Debug> Board<T> {
-    fn display(&self, direction: Direction) -> String {
+    pub(crate) fn display(&self, direction: Direction, hide_padding: bool) -> String {
+        let sep = if hide_padding { "" } else { " " };
         match self {
             Board::Nd(boards) => {
-                let boards = boards.iter().map(|board| board.display(direction.next()));
-                combine_multiline_strings(boards.collect(), direction)
+                let boards = boards
+                    .iter()
+                    .map(|board| board.display(direction.next(), hide_padding));
+                combine_multiline_strings(boards.collect(), direction, sep)
             }
             Board::Piece(piece) => piece.to_string(),
         }
@@ -180,6 +183,6 @@ impl<T: Display + std::fmt::Debug> Board<T> {
 
 impl<T: Display + std::fmt::Debug> Display for Board<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.display(Direction::Horizontal).as_str())
+        f.write_str(self.display(Direction::Horizontal, false).as_str())
     }
 }
