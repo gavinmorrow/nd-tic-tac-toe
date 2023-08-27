@@ -134,7 +134,8 @@ impl Game {
 
 impl Game {
     pub fn display(&self, hide_padding: bool) -> String {
-        self.board.display(board::Direction::Horizontal, hide_padding)
+        self.board
+            .display(board::Direction::Horizontal, hide_padding)
     }
 }
 
