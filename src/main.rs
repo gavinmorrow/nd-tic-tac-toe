@@ -89,9 +89,9 @@ fn map_player_input(input: VecDeque<usize>) -> VecDeque<usize> {
 #[derive(Parser)]
 struct Cli {
     /// The number of dimensions in the game
-    // #[arg(short="d",long="dim")]
+    #[arg(short='d',long="dim")]
     dim: usize,
     /// The number of players in the game
-    // #[arg(short="p",long="players")]
+    #[arg(short='p',long="players")]
     players: u32,
 }
