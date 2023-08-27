@@ -218,4 +218,22 @@ mod test {
 
         assert!(!game.check_win(p0));
     }
+
+    #[test]
+    fn test_3d_no_wraparound_win() {
+        let mut game = Game::new(3, 1);
+        let p0 = Player::new('X');
+
+        // Insert pieces
+        game.place_piece(Piece::new(p0), vec![0, 0, 0].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![3, 3, 1].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 2, 2].into())
+            .unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 1, 3].into())
+            .unwrap();
+
+        assert!(!game.check_win(p0));
+    }
 }

@@ -71,8 +71,11 @@ impl Game {
                 let coords = combination.iter().map(|(i, _)| self.get_coord(*i, dim));
 
                 // Check if all the pieces are either all the same or all different
-                let comp_set: HashSet<usize, RandomState> = HashSet::from_iter(coords);
-                return comp_set.len() == 1 || comp_set.len() == self.width;
+                let comp_set: HashSet<usize, RandomState> = HashSet::from_iter(coords.clone());
+                return (comp_set.len() == 1 || comp_set.len() == self.width)
+                    && !Self::combination_has_wraparound(
+                        combination.iter().map(|(i, _)| *i).collect(),
+                    );
             });
 
             if combination_works {
@@ -81,6 +84,31 @@ impl Game {
         }
 
         return false;
+    }
+
+    fn combination_has_wraparound(coords: Vec<usize>) -> bool {
+        if coords.len() <= 2 {
+            return false;
+        }
+
+        // Get the vector between the first two elements, and check if it works
+        // for all the other pieces
+        // SAFTEY: coords.len() > 2 checked above
+        let first = coords[0];
+        let second = coords[1];
+        let vector = second as isize - first as isize; // `isize` to prevent underflow
+
+        // Check if the vector works for all the other pieces
+        if coords[2..].iter().all(|e| {
+            // Check if the vector works for this piece
+            // `isize` to prevent "attempt to subtract with overflow"
+            let diff = *e as isize - first as isize;
+            diff % vector == 0
+        }) {
+            false
+        } else {
+            true
+        }
     }
 
     fn get_coord(&self, index: usize, dim: usize) -> usize {
@@ -114,112 +142,4 @@ impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(format!("{}", self.board).as_str())
     }
-
-    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    //     todo!()
-    // }
-
-    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    //     // println!("{:?}", self.board);
-
-    //     if self.dim != 4 {
-    //         todo!();
-    //     }
-
-    //     // Get a 5x5 array of the 5x5 grids
-    //     let mut grids: [[String; 5]; 5] = Default::default();
-    //     for (i, grid_row) in self.board.outer_iter().enumerate() {
-    //         for (j, grid) in grid_row.outer_iter().enumerate() {
-    //             let grid_x = j;
-    //             let grid_y = i;
-
-    //             // Format grid
-    //             let mut gstr = String::new();
-    //             let mut rows = Vec::new();
-    //             for row in grid.rows() {
-    //                 let mut out = Vec::new();
-    //                 for cell in row {
-    //                     match cell {
-    //                         Some(p) => out.push(p.symbol()),
-    //                         None => out.push(' '),
-    //                     }
-    //                 }
-    //                 let out = out.iter().join(" | ");
-    //                 rows.push(out);
-    //             }
-    //             let rows = rows
-    //                 .iter()
-    //                 .join(&format!("\n{}\n", "-".repeat(rows[0].len())));
-    //             gstr.push_str(&rows);
-
-    //             grids[grid_x][grid_y] = gstr;
-    //         }
-    //     }
-
-    //     // Join each row of grids
-    //     let mut out = Vec::new();
-    //     for row in grids.iter() {
-    //         // Combine rows (multiline string)
-    //         let mut rows = vec![String::new(); 9 /* 5 + 4 */];
-
-    //         for grid in row {
-    //             let lines: Vec<&str> = grid.lines().collect();
-    //             for (i, line) in lines.iter().enumerate() {
-    //                 rows[i].push_str(line);
-    //                 rows[i].push_str("    ");
-    //             }
-    //         }
-
-    //         let row = rows.iter().join("\n");
-
-    //         out.push(row);
-    //     }
-
-    //     // Join each row of grids
-    //     let mut out = out.iter().join(&format!(
-    //         "\n{}\n\n",
-    //         " ".repeat(out[0].lines().into_iter().next().unwrap().len())
-    //     ));
-
-    //     for player in self.players.iter() {
-    //         out = out.replace(player.symbol(), &player.with_color());
-    //     }
-
-    //     f.write_str(&out)?;
-
-    //     Ok(())
-    // }
-
-    // fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    //     if self.dim % 2 == 0 {
-    //         // Grid
-    //         for row in self.board.outer_iter() {
-    //             for grid_row in row.outer_iter() {
-    //                 for cell in grid_row {
-    //                     match cell {
-    //                         Some(p) => write!(f, "{}", p.player.with_color())?,
-    //                         None => write!(f, ".")?,
-    //                     }
-    //                     write!(f, " ")?;
-    //                 }
-    //                 write!(f, "|")?;
-    //             }
-    //             writeln!(f, "/")?;
-    //         }
-    //     } else {
-    //         // Row
-    //         for row in self.board.outer_iter() {
-    //             for cell in row {
-    //                 match cell {
-    //                     Some(p) => write!(f, "{}", p.player.with_color())?,
-    //                     None => write!(f, ".")?,
-    //                 }
-    //                 write!(f, "|")?;
-    //             }
-    //             writeln!(f, "/")?;
-    //         }
-    //     }
-
-    //     Ok(())
-    // }
 }
