@@ -118,12 +118,6 @@ impl Game {
             / self.width.pow((dim - 1) as u32)
     }
 
-    fn get_coords(&self, index: usize) -> Vec<usize> {
-        (1..=self.dim)
-            .map(|dim| self.get_coord(index, dim))
-            .collect()
-    }
-
     pub fn current_player(&self) -> Player {
         // Get number of pieces on the board
         let num_pieces = self
