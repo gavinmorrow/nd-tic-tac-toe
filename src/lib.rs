@@ -200,4 +200,22 @@ mod test {
         game.place_piece(Piece::new(p1), vec![0, 0, 0, 0, 0].into())
             .unwrap();
     }
+
+    #[test]
+    fn test_2d_not_win() {
+        let mut game = Game::new(2, 2);
+        let p0 = Player::new('X');
+        let p1 = Player::new('O');
+
+        // Insert pieces
+        game.place_piece(Piece::new(p0), vec![0, 0].into()).unwrap();
+        game.place_piece(Piece::new(p1), vec![1, 1].into()).unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 2].into()).unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 1].into()).unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 2].into()).unwrap();
+        game.place_piece(Piece::new(p1), vec![0, 2].into()).unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 1].into()).unwrap();
+
+        assert!(!game.check_win(p0));
+    }
 }

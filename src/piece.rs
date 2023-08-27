@@ -24,7 +24,7 @@ impl Display for Piece {
         // If there isn't a player, create a temporary "player" that will be
         // used only for displaying. (it simplifies the code)
         let player = self.player.unwrap_or_else(|| Player::new('•'));
-        let data = &player.symbol().to_string();
+        let data = &player.with_color();
 
         f.write_str(data)
     }

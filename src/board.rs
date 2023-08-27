@@ -1,10 +1,8 @@
 use std::{
     collections::VecDeque,
-    fmt::{Display, Write},
+    fmt::Display,
     ops::{Index, IndexMut},
 };
-
-use itertools::Itertools;
 
 pub(crate) type Idx = VecDeque<usize>;
 
@@ -141,32 +139,36 @@ impl Direction {
 /// and both strings are the same size in whatever dimension they are being
 /// combined in).
 /// May panic or not work as expected otherwise.
-fn combine_multiline_strings(a: String, b: String, direction: Direction) -> String {
-    if a.is_empty() {
-        return b;
-    }
-    if b.is_empty() {
-        return a;
-    }
-
+fn combine_multiline_strings(strings: Vec<String>, direction: Direction) -> String {
     match direction {
         Direction::Horizontal => {
             // Optimization for allocating the output string
-            let len = a.len() + b.len();
+            let mut strings = strings
+                .iter()
+                .map(|s| s.lines().map(|s| s.to_string()).collect::<Vec<_>>());
 
-            let a = a.lines();
-            let b = b.lines();
+			let init = strings.next().unwrap();
 
-            let combined = a.zip(b);
+            let combined_lines = strings.fold(init, |mut vec, lines| {
+                for (i, line) in lines.iter().enumerate() {
+					// eprintln!("vec: {:?}, i: {i}, line: {line}", vec);
+                    vec[i].push_str(&format!(" {}", line));
+                }
+
+                vec
+            });
+
+            format!(" {} ", combined_lines.join(" \n "))
+
             // combined.fold(String::with_capacity(len), |mut acc, e| {
             //     writeln!(acc, "{}-{}", e.0, e.1).unwrap();
             //     acc
             // })
-            combined.map(|(a, b)| format!("{a}{b}")).join("\n")
+            // combined.map(|(a, b)| format!("{a}{b}")).join("\n")
         }
         Direction::Vertical => {
             // Just append the strings
-            format!("{a}\n{b}")
+            format!("\n{}\n", strings.join("\n"))
         }
     }
 }
@@ -175,10 +177,8 @@ impl<T: Display + std::fmt::Debug> Board<T> {
     fn display(&self, direction: Direction) -> String {
         match self {
             Board::Nd(boards) => {
-                let chunks = boards
-                    .iter()
-                    .map(|board| board.display(direction.next()));
-                    
+                let boards = boards.iter().map(|board| board.display(direction.next()));
+				combine_multiline_strings(boards.collect(), direction)
 
                 // dbg!(chunks
                 //     .into_iter()
@@ -192,7 +192,6 @@ impl<T: Display + std::fmt::Debug> Board<T> {
                 //         ))
                 //     })
                 //     .join(""))
-				todo!()
             }
             // .fold(String::new(), |acc, board| {
             //     combine_multiline_strings(acc, board, direction)

@@ -17,7 +17,7 @@ impl Player {
             'X' => "\x1b[1;94m",
             'O' => "\x1b[1;93m",
             'F' => "\x1b[1;95m",
-            _ => "\x1b[1m",
+            _ => "",
         };
         format!("{}{}\x1b[0m", color, self.0)
     }
