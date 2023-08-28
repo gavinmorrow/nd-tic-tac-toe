@@ -2,21 +2,33 @@ use std::collections::VecDeque;
 
 use clap::Parser;
 use itertools::Itertools;
-use nd_tic_tac_toe::{Game, Piece};
+use nd_tic_tac_toe::{Game, Piece, PlacePieceError};
 
 fn main() {
     let args = Cli::parse();
     let mut game = Game::new(args.dim, args.players);
 
+    let mut last_error: Option<String> = None;
     loop {
+        // Clear the screen
+        print!("\x1B[2J\x1B[1;1H");
+
         // Print the board
         println!("{}", game.display(args.hide_padding));
 
         // Get the next player's move
         let player = game.current_player();
-        println!("{}:", player);
+        println!(
+            "{}: \x1b[1m{}\x1b[0m",
+            player,
+            if let Some(last_error) = last_error {
+                last_error
+            } else {
+                "".to_string()
+            }
+        );
         let Ok(coords) = get_player_input() else {
-            println!("Invalid input");
+            last_error = Some("Invalid input".to_string());
             continue;
         };
 
@@ -29,16 +41,21 @@ fn main() {
         // Check if the player's move is valid
         match game.place_piece(Piece::new(player), coords) {
             Ok(_) => {
+                last_error = None;
+
                 // Check if the game is over
                 if game.check_win(player) {
+                    // Clear the screen
+                    print!("\x1B[2J\x1B[1;1H");
+
                     // Print the board
                     println!("{}", game.display(args.hide_padding));
-                    println!("{} wins!", player);
+                    println!("\x1b[1m{}\x1b[1m wins!\x1b[0m", player);
                     break;
                 }
             }
             Err(e) => {
-                println!("{:?}", e);
+                last_error = Some(e.to_string());
                 continue;
             }
         };

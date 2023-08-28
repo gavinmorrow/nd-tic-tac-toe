@@ -20,7 +20,7 @@ impl Player {
             '•' => "\x1b[2;90m",
             _ => "\x1b[1;1m",
         };
-        format!("{}{}\x1b[0m", color, self.0)
+        format!("{}{}\x1b[0m", color, self.symbol())
     }
 }
 
@@ -39,6 +39,6 @@ impl TryFrom<u32> for Player {
 
 impl Display for Player {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(format!("Player {}", self.symbol()).as_str())
+        f.write_str(format!("Player {}", self.with_color()).as_str())
     }
 }

@@ -3,6 +3,8 @@ mod game;
 mod piece;
 mod player;
 
+use std::fmt::Display;
+
 use board::Board;
 pub use game::Game;
 pub use piece::Piece;
@@ -12,6 +14,15 @@ use player::Player;
 pub enum PlacePieceError {
     OutOfBounds,
     Occupied,
+}
+
+impl Display for PlacePieceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PlacePieceError::OutOfBounds => f.write_str("Out of bounds"),
+            PlacePieceError::Occupied => f.write_str("Occupied"),
+        }
+    }
 }
 
 #[cfg(test)]
