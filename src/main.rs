@@ -2,16 +2,26 @@ use std::collections::VecDeque;
 
 use clap::Parser;
 use itertools::Itertools;
-use nd_tic_tac_toe::{Game, Piece, PlacePieceError};
+use nd_tic_tac_toe::{Game, Piece};
 
 fn main() {
+    // Clear the screen
+    print!("\x1B[2J\x1B[1;1H");
+
     let args = Cli::parse();
     let mut game = Game::new(args.dim, args.players);
 
+    let mut top_message: String = format!(
+        "Starting a {}-dimensional tic-tac-toe game with {} players",
+        args.dim, args.players
+    );
     let mut last_error: Option<String> = None;
     loop {
         // Clear the screen
         print!("\x1B[2J\x1B[1;1H");
+
+        // Print the top message
+        println!("{}", top_message);
 
         // Print the board
         println!("{}", game.display(args.hide_padding));
@@ -32,6 +42,9 @@ fn main() {
             continue;
         };
 
+        top_message = format!("Last move: {} at {:?}", player, coords);
+
+        // Adjust input
         let coords = if args.dim % 2 != 0 {
             map_player_input(coords)
         } else {
@@ -45,12 +58,6 @@ fn main() {
 
                 // Check if the game is over
                 if game.check_win(player) {
-                    // Clear the screen
-                    print!("\x1B[2J\x1B[1;1H");
-
-                    // Print the board
-                    println!("{}", game.display(args.hide_padding));
-                    println!("\x1b[1m{}\x1b[1m wins!\x1b[0m", player);
                     break;
                 }
             }
@@ -60,6 +67,13 @@ fn main() {
             }
         };
     }
+
+    // Clear the screen
+    print!("\x1B[2J\x1B[1;1H");
+
+    // Print the board
+    println!("{}", game.display(args.hide_padding));
+    println!("\x1b[1m{}\x1b[1m wins!\x1b[0m", game.current_player());
 }
 
 fn get_player_input() -> std::io::Result<VecDeque<usize>> {
