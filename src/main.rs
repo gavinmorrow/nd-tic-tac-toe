@@ -24,7 +24,7 @@ fn main() {
         println!("{}", top_message);
 
         // Print the board
-        println!("{}", game.display(args.hide_padding));
+        println!("{}\n", game.display(args.hide_padding));
 
         // Get the next player's move
         let player = game.current_player();
