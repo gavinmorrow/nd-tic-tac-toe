@@ -58,6 +58,14 @@ fn main() {
 
                 // Check if the game is over
                 if game.check_win(player) {
+                    // Clear the screen
+                    print!("\x1B[2J\x1B[1;1H");
+
+                    // Print the board
+                    println!("{}", game.display(args.hide_padding));
+                    println!("\x1b[1m{}\x1b[1m wins!\x1b[0m", player);
+
+                    // Exit
                     break;
                 }
             }
@@ -68,12 +76,7 @@ fn main() {
         };
     }
 
-    // Clear the screen
-    print!("\x1B[2J\x1B[1;1H");
-
-    // Print the board
-    println!("{}", game.display(args.hide_padding));
-    println!("\x1b[1m{}\x1b[1m wins!\x1b[0m", game.current_player());
+    println!("Game over. Goodbye!")
 }
 
 fn get_player_input() -> std::io::Result<VecDeque<usize>> {
