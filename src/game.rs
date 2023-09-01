@@ -98,15 +98,27 @@ impl Game {
         let second = coords[1];
         let vector = second as isize - first as isize; // `isize` to prevent underflow
 
+        eprintln!("{:?}, {}, {}, {}", coords, first, second, vector);
+
+        // the second element because it starts checking again from the first
+        let mut prev = second;
+
         // Check if the vector works for all the other pieces
         if coords[2..].iter().all(|e| {
             // Check if the vector works for this piece
             // `isize` to prevent "attempt to subtract with overflow"
-            let diff = *e as isize - first as isize;
-            diff % vector == 0
+            let diff = *e as isize - prev as isize;
+
+            eprintln!("{}, {} - {} = {} = {}", vector, e, prev, e - prev, diff);
+
+            prev = *e;
+
+            diff == vector
         }) {
+            // Does not have wraparound
             false
         } else {
+            // Does have wraparound
             true
         }
     }

@@ -213,7 +213,7 @@ mod test {
     }
 
     #[test]
-    fn test_2d_no_wraparound_win() {
+    fn test_2d_no_wraparound_win_0() {
         let mut game = Game::new(2, 2);
         let p0 = Player::new('X');
         let p1 = Player::new('O');
@@ -225,6 +225,19 @@ mod test {
         game.place_piece(Piece::new(p1), vec![0, 1].into()).unwrap();
         game.place_piece(Piece::new(p0), vec![1, 2].into()).unwrap();
         game.place_piece(Piece::new(p1), vec![0, 2].into()).unwrap();
+        game.place_piece(Piece::new(p0), vec![2, 1].into()).unwrap();
+
+        assert!(!game.check_win(p0));
+    }
+    
+    #[test]
+    fn test_2d_no_wraparound_win_1() {
+        let mut game = Game::new(2, 1);
+        let p0 = Player::new('X');
+
+        // Insert pieces
+        game.place_piece(Piece::new(p0), vec![0, 2].into()).unwrap();
+        game.place_piece(Piece::new(p0), vec![1, 0].into()).unwrap();
         game.place_piece(Piece::new(p0), vec![2, 1].into()).unwrap();
 
         assert!(!game.check_win(p0));
