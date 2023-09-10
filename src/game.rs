@@ -1,5 +1,5 @@
 use std::{
-    collections::{hash_map::RandomState, HashSet},
+    collections::{hash_map::RandomState, HashMap, HashSet},
     fmt::Display,
 };
 
@@ -15,6 +15,7 @@ pub struct Game {
     dim: usize,
     width: usize,
     players: Vec<Player>,
+    last_piece: HashMap<Player, (usize, Piece)>,
 }
 
 impl Game {
@@ -27,9 +28,13 @@ impl Game {
             players: (0..players)
                 .map(|n| n.try_into().expect("Valid number of players"))
                 .collect(),
+            last_piece: HashMap::with_capacity(players as usize),
         }
     }
 
+    /// # Panics
+    ///
+    /// - Panics if `piece.player` is `None`.
     pub fn place_piece(&mut self, piece: Piece, coords: board::Idx) -> Result<(), PlacePieceError> {
         match self.board.get(coords.clone()) {
             // The outer optional is for in bounds, the inner optional is for occupied.
@@ -40,6 +45,10 @@ impl Game {
             None => return Err(PlacePieceError::OutOfBounds),
         }
 
+        self.last_piece.insert(
+            piece.player.unwrap(),
+            (self.get_index(coords.clone().into()), piece.clone()),
+        );
         self.board[coords] = piece.into();
         Ok(())
     }
@@ -53,16 +62,30 @@ impl Game {
         // Collect all the pieces for the current player
         let board = self.board.flatten();
 
+        let piece = match &self.last_piece.get(&player) {
+            Some((i, piece)) => (*i, piece.clone()),
+            None => return false,
+        };
+
         let pieces = board
             .iter()
             .enumerate()
-            .filter(|(_, e)| match e {
+            .filter(|(i, e)| match e {
                 Piece {
                     player: Some(p), ..
                 } => p == &player,
                 Piece { player: None, .. } => false,
-            })
-            .combinations(self.width);
+            } && *i != piece.0)
+            // Remove levels of reference
+            .map(|(i, e)| (i, e.clone().clone()))
+            .combinations(self.width - 1)
+            .map(|mut c| {
+                c.push(piece.clone());
+                c.sort_unstable_by_key(|e| e.0);
+                c
+            });
+
+        let pieces: Vec<_> = dbg!(pieces.collect());
 
         for combination in pieces {
             // Calculate the coordinates of the pieces in each dimension
@@ -128,6 +151,15 @@ impl Game {
         // It works. 🎉
         ((index % self.width.pow(dim as u32)) - (index % self.width.pow((dim - 1) as u32)))
             / self.width.pow((dim - 1) as u32)
+    }
+
+    fn get_index(&self, coords: Vec<usize>) -> usize {
+        coords
+            .iter()
+            .rev()
+            .enumerate()
+            .map(|(i, e)| e * self.width.pow(i as u32))
+            .sum()
     }
 
     pub fn current_player(&self) -> Player {
