@@ -83,7 +83,7 @@ fn get_player_input() -> std::io::Result<VecDeque<usize>> {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
 
-    let input = input.trim().split_whitespace().map(|x| x.parse());
+    let input = input.split_whitespace().map(|x| x.parse());
 
     if !input.clone().all(|r| r.is_ok()) {
         return Err(std::io::Error::new(
@@ -93,8 +93,7 @@ fn get_player_input() -> std::io::Result<VecDeque<usize>> {
     }
 
     let input: VecDeque<usize> = input.map(|r| r.unwrap()).collect();
-
-    return Ok(input);
+    Ok(input)
 }
 
 fn map_player_input(input: VecDeque<usize>) -> VecDeque<usize> {
