@@ -63,12 +63,12 @@ impl Game {
         let board = self.board.flatten();
 
         let piece = match &self.last_piece.get(&player) {
-            Some((i, piece)) => (*i, piece.clone()),
+            Some((i, piece)) => (*i, piece),
             None => return false,
         };
 
         let pieces = board
-            .iter()
+            .into_iter()
             .enumerate()
             .filter(|(i, e)| match e {
                 Piece {
@@ -76,11 +76,9 @@ impl Game {
                 } => p == &player,
                 Piece { player: None, .. } => false,
             } && *i != piece.0)
-            // Remove levels of reference
-            .map(|(i, e)| (i, e.clone().clone()))
             .combinations(self.width - 1)
             .map(|mut c| {
-                c.push(piece.clone());
+                c.push(piece);
                 c.sort_unstable_by_key(|e| e.0);
                 c
             });
