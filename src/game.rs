@@ -96,7 +96,7 @@ impl Game {
                 // Check if all the pieces are either all the same or all different
                 let comp_set: HashSet<usize, RandomState> = HashSet::from_iter(coords.clone());
                 return (comp_set.len() == 1 || comp_set.len() == self.width)
-                    && !Self::combination_has_wraparound(
+                    && Self::combination_no_wraparound(
                         combination.iter().map(|(i, _)| *i).collect(),
                     );
             });
@@ -106,10 +106,10 @@ impl Game {
             }
         }
 
-        return false;
+        false
     }
 
-    fn combination_has_wraparound(coords: Vec<usize>) -> bool {
+    fn combination_no_wraparound(coords: Vec<usize>) -> bool {
         if coords.len() <= 2 {
             return false;
         }
@@ -127,7 +127,7 @@ impl Game {
         let mut prev = second;
 
         // Check if the vector works for all the other pieces
-        if coords[2..].iter().all(|e| {
+        coords[2..].iter().all(|e| {
             // Check if the vector works for this piece
             // `isize` to prevent "attempt to subtract with overflow"
             let diff = *e as isize - prev as isize;
@@ -137,13 +137,7 @@ impl Game {
             prev = *e;
 
             diff == vector
-        }) {
-            // Does not have wraparound
-            false
-        } else {
-            // Does have wraparound
-            true
-        }
+        })
     }
 
     fn get_coord(&self, index: usize, dim: usize) -> usize {
