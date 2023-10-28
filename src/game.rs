@@ -83,7 +83,7 @@ impl Game {
                 c
             });
 
-        let pieces: Vec<_> = dbg!(pieces.collect());
+        let pieces: Vec<_> = pieces.collect();
 
         for combination in pieces {
             // Calculate the coordinates of the pieces in each dimension
